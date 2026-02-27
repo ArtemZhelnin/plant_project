@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plant Analysis - Сегментация растений</title>
+    <title>Plant Analysis</title>
     <style>
         * {
             margin: 0;
@@ -12,60 +12,141 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
+            font-family: 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: #36393f;
+            color: #dcddde;
+            line-height: 1.4;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
+        .app {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 240px;
+            background: #2f3136;
+            padding: 20px 0;
+            border-right: 1px solid #202225;
+        }
+
+        .sidebar-header {
+            padding: 0 20px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #202225;
+            padding-bottom: 15px;
+        }
+
+        .sidebar-header h1 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .channel {
+            padding: 6px 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 14px;
+        }
+
+        .channel:hover {
+            background: #35373c;
+        }
+
+        .channel.active {
+            background: #393d42;
+            color: #fff;
+            border-left: 3px solid #7289da;
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
 
         .header {
-            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
+            height: 48px;
+            background: #36393f;
+            border-bottom: 1px solid #202225;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
         }
 
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
+        .header h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
         }
 
-        .header p {
-            font-size: 1.2em;
-            opacity: 0.9;
+        .chat {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
         }
 
-        .main-content {
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #7289da;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .message-content {
+            flex: 1;
+        }
+
+        .username {
+            font-weight: 500;
+            color: #fff;
+            margin-bottom: 2px;
+        }
+
+        .timestamp {
+            font-size: 12px;
+            color: #72767d;
+            margin-left: 8px;
+            font-weight: 400;
+        }
+
+        .message-text {
+            color: #dcddde;
+            line-height: 1.375;
+        }
+
+        .upload-area {
+            background: #35373c;
+            border: 2px dashed #4f545c;
+            border-radius: 8px;
             padding: 40px;
-        }
-
-        .upload-section {
-            background: #f8f9fa;
-            border: 2px dashed #dee2e6;
-            border-radius: 15px;
-            padding: 40px;
             text-align: center;
-            margin-bottom: 30px;
-            transition: all 0.3s ease;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: all 0.2s;
         }
 
-        .upload-section:hover {
-            border-color: #2ecc71;
-            background: #f0fff4;
+        .upload-area:hover {
+            border-color: #7289da;
+            background: #40444b;
         }
 
-        .upload-section.dragover {
-            border-color: #2ecc71;
-            background: #e8f5e8;
+        .upload-area.dragover {
+            border-color: #7289da;
+            background: #40444b;
         }
 
         .file-input {
@@ -73,228 +154,211 @@
         }
 
         .upload-btn {
-            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
-            color: white;
+            background: #7289da;
+            color: #fff;
             border: none;
-            padding: 15px 30px;
-            font-size: 1.1em;
-            border-radius: 10px;
+            padding: 10px 16px;
+            border-radius: 3px;
+            font-size: 14px;
             cursor: pointer;
-            transition: transform 0.3s ease;
+            transition: background 0.17s;
         }
 
         .upload-btn:hover {
-            transform: translateY(-2px);
+            background: #677bc4;
         }
 
-        .upload-icon {
-            font-size: 3em;
-            margin-bottom: 20px;
-            color: #2ecc71;
+        .results {
+            background: #40444b;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
         }
 
-        .results-section {
-            display: none;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-top: 30px;
+        .results h3 {
+            color: #fff;
+            font-size: 16px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #36393f;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            color: #b9bbbe;
+        }
+
+        .result-value {
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .image-preview {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
         }
 
         .image-container {
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
+            flex: 1;
+            background: #35373c;
+            border-radius: 8px;
+            padding: 10px;
         }
 
-        .image-container h3 {
-            margin-bottom: 15px;
-            color: #2c3e50;
+        .image-container h4 {
+            color: #b9bbbe;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-align: center;
         }
 
         .image-container img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 10px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        }
-
-        .metrics-container {
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 20px;
-        }
-
-        .metrics-container h3 {
-            margin-bottom: 20px;
-            color: #2c3e50;
-        }
-
-        .metric-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 15px;
-            margin-bottom: 10px;
-            background: white;
-            border-radius: 10px;
-            border-left: 4px solid #2ecc71;
-        }
-
-        .metric-label {
-            font-weight: 600;
-            color: #2c3e50;
-        }
-
-        .metric-value {
-            font-weight: 700;
-            color: #27ae60;
-            font-size: 1.1em;
+            width: 100%;
+            border-radius: 4px;
         }
 
         .loading {
-            display: none;
             text-align: center;
-            padding: 40px;
+            padding: 20px;
+            color: #b9bbbe;
         }
 
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #2ecc71;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+        .error {
+            background: #ed4245;
+            color: #fff;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .success {
+            background: #3ba55c;
+            color: #fff;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
         }
 
-        .error-message {
-            display: none;
-            background: #f8d7da;
-            color: #721c24;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 20px 0;
-            border: 1px solid #f5c6cb;
+        .input-area {
+            padding: 20px;
+            background: #40444b;
+            border-top: 1px solid #202225;
         }
 
-        .success-message {
-            display: none;
-            background: #d4edda;
-            color: #155724;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 20px 0;
-            border: 1px solid #c3e6cb;
+        .input-wrapper {
+            display: flex;
+            gap: 10px;
         }
 
-        @media (max-width: 768px) {
-            .results-section {
-                grid-template-columns: 1fr;
-            }
-            
-            .header h1 {
-                font-size: 2em;
-            }
-            
-            .main-content {
-                padding: 20px;
-            }
+        .input-field {
+            flex: 1;
+            background: #40444b;
+            border: 1px solid #202225;
+            color: #dcddde;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #7289da;
+        }
+
+        .send-btn {
+            background: #7289da;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .send-btn:hover {
+            background: #677bc4;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header class="header">
-            <h1>🌱 Plant Analysis</h1>
-            <p>Система семантической сегментации растений пшеницы и рукколы</p>
-        </header>
+    <div class="app">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1>Plant Analysis</h1>
+            </div>
+            <div class="channel active" onclick="switchChannel('main')"># main</div>
+            <div class="channel" onclick="switchChannel('results')"># results</div>
+            <div class="channel" onclick="switchChannel('help')"># help</div>
+        </div>
 
-        <main class="main-content">
-            <div class="upload-section" id="uploadSection">
-                <div class="upload-icon">📸</div>
-                <h2>Загрузите изображение растения</h2>
-                <p style="margin: 15px 0; color: #6c757d;">
-                    Перетащите файл сюда или нажмите для выбора
-                </p>
-                <input type="file" id="fileInput" class="file-input" accept="image/*">
-                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
-                    Выбрать файл
-                </button>
+        <div class="main">
+            <div class="header">
+                <h2 id="channelTitle"># main</h2>
             </div>
 
-            <div class="loading" id="loading">
-                <div class="spinner"></div>
-                <h3>Анализ изображения...</h3>
-                <p>Это может занять несколько секунд</p>
+            <div class="chat" id="chatContent">
+                <div class="message">
+                    <div class="avatar">🤖</div>
+                    <div class="message-content">
+                        <div class="username">Bot<span class="timestamp">12:00</span></div>
+                        <div class="message-text">Привет! Загрузи изображение растения для анализа. Поддерживаются пшеница и руккола.</div>
+                    </div>
+                </div>
+
+                <div class="upload-area" id="uploadArea">
+                    <div style="font-size: 48px; margin-bottom: 15px;">📎</div>
+                    <div>Перетащи изображение сюда или выбери файл</div>
+                    <div style="margin-top: 15px;">
+                        <input type="file" id="fileInput" class="file-input" accept="image/*">
+                        <button class="upload-btn" onclick="document.getElementById('fileInput').click()">Выбрать файл</button>
+                    </div>
+                </div>
+
+                <div id="resultsContainer"></div>
             </div>
 
-            <div class="error-message" id="errorMessage"></div>
-            <div class="success-message" id="successMessage"></div>
-
-            <div class="results-section" id="resultsSection">
-                <div class="image-container">
-                    <h3>Оригинальное изображение</h3>
-                    <img id="originalImage" alt="Оригинал">
-                </div>
-                
-                <div class="image-container">
-                    <h3>Сегментация</h3>
-                    <img id="segmentedImage" alt="Сегментация">
-                </div>
-                
-                <div class="metrics-container">
-                    <h3>📊 Результаты измерений</h3>
-                    <div class="metric-item">
-                        <span class="metric-label">Длина корня:</span>
-                        <span class="metric-value" id="rootLength">-</span>
-                    </div>
-                    <div class="metric-item">
-                        <span class="metric-label">Длина стебля:</span>
-                        <span class="metric-value" id="stemLength">-</span>
-                    </div>
-                    <div class="metric-item">
-                        <span class="metric-label">Площадь корня:</span>
-                        <span class="metric-value" id="rootArea">-</span>
-                    </div>
-                    <div class="metric-item">
-                        <span class="metric-label">Площадь стебля:</span>
-                        <span class="metric-value" id="stemArea">-</span>
-                    </div>
-                    <div class="metric-item">
-                        <span class="metric-label">Площадь листьев:</span>
-                        <span class="metric-value" id="leafArea">-</span>
-                    </div>
+            <div class="input-area">
+                <div class="input-wrapper">
+                    <input type="text" class="input-field" id="messageInput" placeholder="Напиши сообщение..." onkeypress="handleKeyPress(event)">
+                    <button class="send-btn" onclick="sendMessage()">Отправить</button>
                 </div>
             </div>
-        </main>
+        </div>
     </div>
 
     <script>
-        const uploadSection = document.getElementById('uploadSection');
+        const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
-        const loading = document.getElementById('loading');
-        const resultsSection = document.getElementById('resultsSection');
-        const errorMessage = document.getElementById('errorMessage');
-        const successMessage = document.getElementById('successMessage');
+        const chatContent = document.getElementById('chatContent');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const messageInput = document.getElementById('messageInput');
+        const channelTitle = document.getElementById('channelTitle');
+
+        let currentChannel = 'main';
 
         // Drag and drop
-        uploadSection.addEventListener('dragover', (e) => {
+        uploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
-            uploadSection.classList.add('dragover');
+            uploadArea.classList.add('dragover');
         });
 
-        uploadSection.addEventListener('dragleave', () => {
-            uploadSection.classList.remove('dragover');
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
         });
 
-        uploadSection.addEventListener('drop', (e) => {
+        uploadArea.addEventListener('drop', (e) => {
             e.preventDefault();
-            uploadSection.classList.remove('dragover');
+            uploadArea.classList.remove('dragover');
             
             const files = e.dataTransfer.files;
             if (files.length > 0) {
@@ -310,12 +374,12 @@
 
         function handleFile(file) {
             if (!file.type.startsWith('image/')) {
-                showError('Пожалуйста, выберите изображение');
+                addMessage('Bot', 'Пожалуйста, выберите изображение', 'error');
                 return;
             }
 
-            hideMessages();
-            showLoading();
+            addMessage('User', `Загружен файл: ${file.name}`, 'user');
+            addMessage('Bot', 'Анализирую изображение...', 'bot');
 
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -325,97 +389,195 @@
             reader.readAsDataURL(file);
         }
 
-        function showLoading() {
-            loading.style.display = 'block';
-            resultsSection.style.display = 'none';
-            uploadSection.style.display = 'none';
-        }
-
-        function hideLoading() {
-            loading.style.display = 'none';
-        }
-
-        function showResults() {
-            resultsSection.style.display = 'grid';
-            uploadSection.style.display = 'block';
-        }
-
-        function showError(message) {
-            errorMessage.textContent = message;
-            errorMessage.style.display = 'block';
-            successMessage.style.display = 'none';
-            hideLoading();
-            uploadSection.style.display = 'block';
-        }
-
-        function showSuccess(message) {
-            successMessage.textContent = message;
-            successMessage.style.display = 'block';
-            errorMessage.style.display = 'none';
-        }
-
-        function hideMessages() {
-            errorMessage.style.display = 'none';
-            successMessage.style.display = 'none';
-        }
-
-        async function analyzeImage(imageData) {
-            try {
-                // Здесь будет API вызов к FastAPI
-                // Пока используем моковые данные для демонстрации
-                
-                // Показываем оригинальное изображение
-                document.getElementById('originalImage').src = imageData;
-                
-                // Имитация задержки обработки
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                
-                // Моковые результаты (заменить на реальный API вызов)
+        function analyzeImage(imageData) {
+            setTimeout(() => {
                 const mockResults = {
                     root_length_mm: 45.2,
                     stem_length_mm: 28.7,
                     root_area_mm2: 125.4,
                     stem_area_mm2: 89.3,
-                    leaf_area_mm2: 342.1,
-                    overlay_image: imageData // В реальности это будет base64 от API
+                    leaf_area_mm2: 342.1
                 };
+
+                addMessage('Bot', 'Анализ завершен! Результаты:', 'bot');
+                showResults(imageData, mockResults);
+            }, 2000);
+        }
+
+        function showResults(imageData, results) {
+            const resultsHtml = `
+                <div class="results">
+                    <h3>📊 Результаты измерений</h3>
+                    <div class="result-item">
+                        <span class="result-label">Длина корня:</span>
+                        <span class="result-value">${results.root_length_mm} мм</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Длина стебля:</span>
+                        <span class="result-value">${results.stem_length_mm} мм</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Площадь корня:</span>
+                        <span class="result-value">${results.root_area_mm2} мм²</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Площадь стебля:</span>
+                        <span class="result-value">${results.stem_area_mm2} мм²</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Площадь листьев:</span>
+                        <span class="result-value">${results.leaf_area_mm2} мм²</span>
+                    </div>
+                </div>
+
+                <div class="image-preview">
+                    <div class="image-container">
+                        <h4>Оригинал</h4>
+                        <img src="${imageData}" alt="Оригинал">
+                    </div>
+                    <div class="image-container">
+                        <h4>Сегментация</h4>
+                        <img src="${imageData}" alt="Сегментация">
+                    </div>
+                </div>
+            `;
+
+            resultsContainer.innerHTML = resultsHtml;
+        }
+
+        function addMessage(username, text, type = 'normal') {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message';
+            
+            const avatar = type === 'user' ? '👤' : '🤖';
+            const timestamp = new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+            
+            messageDiv.innerHTML = `
+                <div class="avatar">${avatar}</div>
+                <div class="message-content">
+                    <div class="username">${username}<span class="timestamp">${timestamp}</span></div>
+                    <div class="message-text">${text}</div>
+                </div>
+            `;
+            
+            chatContent.insertBefore(messageDiv, uploadArea);
+            chatContent.scrollTop = chatContent.scrollHeight;
+        }
+
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (message) {
+                addMessage('User', message, 'user');
+                messageInput.value = '';
                 
-                // Обновляем метрики
-                document.getElementById('rootLength').textContent = `${mockResults.root_length_mm} мм`;
-                document.getElementById('stemLength').textContent = `${mockResults.stem_length_mm} мм`;
-                document.getElementById('rootArea').textContent = `${mockResults.root_area_mm2} мм²`;
-                document.getElementById('stemArea').textContent = `${mockResults.stem_area_mm2} мм²`;
-                document.getElementById('leafArea').textContent = `${mockResults.leaf_area_mm2} мм²`;
-                
-                // Показываем сегментированное изображение
-                document.getElementById('segmentedImage').src = mockResults.overlay_image;
-                
-                hideLoading();
-                showResults();
-                showSuccess('Анализ успешно завершен!');
-                
-            } catch (error) {
-                console.error('Error:', error);
-                showError('Произошла ошибка при анализе изображения');
+                // Simple bot responses
+                setTimeout(() => {
+                    if (message.toLowerCase().includes('привет')) {
+                        addMessage('Bot', 'Привет! Загрузи изображение для анализа.', 'bot');
+                    } else if (message.toLowerCase().includes('помощь')) {
+                        addMessage('Bot', 'Поддерживаемые форматы: JPG, PNG. Анализируем пшеницу и рукколу.', 'bot');
+                    } else {
+                        addMessage('Bot', 'Понял. Загрузи изображение для начала анализа.', 'bot');
+                    }
+                }, 500);
             }
         }
 
-        // Функция для реального API вызова (когда бэкенд будет готов)
-        async function callAPI(imageData) {
-            const formData = new FormData();
-            const blob = await fetch(imageData).then(r => r.blob());
-            formData.append('image', blob, 'image.jpg');
-            
-            const response = await fetch('/predict', {
-                method: 'POST',
-                body: formData
-            });
-            
-            if (!response.ok) {
-                throw new Error('API request failed');
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
             }
+        }
+
+        function switchChannel(channel) {
+            currentChannel = channel;
             
-            return await response.json();
+            // Update active channel
+            document.querySelectorAll('.channel').forEach(ch => {
+                ch.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update header
+            channelTitle.textContent = `# ${channel}`;
+            
+            // Clear chat and show channel-specific content
+            chatContent.innerHTML = '';
+            resultsContainer.innerHTML = '';
+            
+            if (channel === 'main') {
+                chatContent.innerHTML = `
+                    <div class="message">
+                        <div class="avatar">🤖</div>
+                        <div class="message-content">
+                            <div class="username">Bot<span class="timestamp">12:00</span></div>
+                            <div class="message-text">Привет! Загрузи изображение растения для анализа.</div>
+                        </div>
+                    </div>
+                    <div class="upload-area" id="uploadArea">
+                        <div style="font-size: 48px; margin-bottom: 15px;">📎</div>
+                        <div>Перетащи изображение сюда или выбери файл</div>
+                        <div style="margin-top: 15px;">
+                            <input type="file" id="fileInput" class="file-input" accept="image/*">
+                            <button class="upload-btn" onclick="document.getElementById('fileInput').click()">Выбрать файл</button>
+                        </div>
+                    </div>
+                    <div id="resultsContainer"></div>
+                `;
+                // Re-attach event listeners
+                const newUploadArea = document.getElementById('uploadArea');
+                const newFileInput = document.getElementById('fileInput');
+                
+                newUploadArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    newUploadArea.classList.add('dragover');
+                });
+                
+                newUploadArea.addEventListener('dragleave', () => {
+                    newUploadArea.classList.remove('dragover');
+                });
+                
+                newUploadArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    newUploadArea.classList.remove('dragover');
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        handleFile(files[0]);
+                    }
+                });
+                
+                newFileInput.addEventListener('change', (e) => {
+                    if (e.target.files.length > 0) {
+                        handleFile(e.target.files[0]);
+                    }
+                });
+            } else if (channel === 'results') {
+                chatContent.innerHTML = `
+                    <div class="message">
+                        <div class="avatar">🤖</div>
+                        <div class="message-content">
+                            <div class="username">Bot<span class="timestamp">12:00</span></div>
+                            <div class="message-text">Здесь будут отображаться результаты анализов.</div>
+                        </div>
+                    </div>
+                `;
+            } else if (channel === 'help') {
+                chatContent.innerHTML = `
+                    <div class="message">
+                        <div class="avatar">🤖</div>
+                        <div class="message-content">
+                            <div class="username">Bot<span class="timestamp">12:00</span></div>
+                            <div class="message-text">
+                                <strong>Справка:</strong><br>
+                                • Поддерживаемые форматы: JPG, PNG<br>
+                                • Анализируем: пшеница, руккола<br>
+                                • Измеряем: длину корня/стебля, площадь частей растения<br>
+                                • Просто перетащи файл в чат или нажми "Выбрать файл"
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
         }
     </script>
 </body>
