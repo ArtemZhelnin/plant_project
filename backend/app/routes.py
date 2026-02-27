@@ -1,11 +1,9 @@
+import asyncio
 from fastapi import APIRouter, File, UploadFile, HTTPException
-from fastapi.responses import JSONResponse
 import base64
 import io
-import time
 import random
 from PIL import Image
-import numpy as np
 
 from app.schemas import AnalysisResponse, Metrics
 
@@ -19,7 +17,7 @@ async def analyze_plant(image: UploadFile = File(...)):
     try:
         # Validate file type
         if not image.content_type or not image.content_type.startswith('image/'):
-            raise HTTPException(status_code=400, detail="File must be an image")
+            raise HTTPException(status_code=400, detail="Файл должен быть изображением")
         
         # Read and validate image
         contents = await image.read()
@@ -28,7 +26,7 @@ async def analyze_plant(image: UploadFile = File(...)):
             img.verify()  # Verify image integrity
             img = Image.open(io.BytesIO(contents))  # Reopen after verify
         except Exception:
-            raise HTTPException(status_code=400, detail="Invalid image file")
+            raise HTTPException(status_code=400, detail="Некорректный файл изображения")
         
         # Convert to RGB if necessary
         if img.mode != 'RGB':

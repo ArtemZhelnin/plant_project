@@ -1,7 +1,7 @@
 import React from 'react';
 import { RouterProvider } from 'react-router-dom';
-import { router } from './router';
-import { Toaster } from '../components/ui/Toaster';
+import { router } from './router.tsx';
+import Toaster from '../components/ui/Toaster.tsx';
 
 function App() {
   return (

@@ -25,11 +25,7 @@ export const analyzeImage = async (file: File): Promise<AnalysisResponse> => {
   const formData = new FormData();
   formData.append('image', file);
 
-  const response = await apiClient.post('/predict', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
+  const response = await apiClient.post('/api/predict', formData);
 
   return response.data;
 };

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Maximize2, RotateCw } from 'lucide-react';
+import { Eye, EyeOff, RotateCw } from 'lucide-react';
 
 interface ImageViewerProps {
   originalImage: string;
@@ -13,94 +13,152 @@ const ImageViewer: React.FC<ImageViewerProps> = ({
   overlayImage, 
   isAnalyzing = false 
 }) => {
-  const [viewMode, setViewMode] = useState<'original' | 'overlay' | 'comparison'>('original');
+  const [viewMode, setViewMode] = useState<'original' | 'overlay'>('original');
   const [zoom, setZoom] = useState(1);
-  const [sliderPosition, setSliderPosition] = useState(50);
 
-  const handleZoomIn = () => {
-    setZoom(prev => Math.min(prev + 0.25, 3));
-  };
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const dragStateRef = useRef<{ dragging: boolean; startX: number; startY: number; baseX: number; baseY: number } | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
-  const handleZoomOut = () => {
-    setZoom(prev => Math.max(prev - 0.25, 0.5));
-  };
-
-  const handleReset = () => {
+  const zoomIn = () => setZoom((prev) => Math.min(prev + 0.2, 4));
+  const zoomOut = () => setZoom((prev) => Math.max(prev - 0.2, 0.5));
+  const resetView = () => {
     setZoom(1);
-    setSliderPosition(50);
+    setOffset({ x: 0, y: 0 });
+  };
+
+  const clampOffsetToBounds = (nextOffset: { x: number; y: number }, nextZoom: number) => {
+    const el = containerRef.current;
+    if (!el) return nextOffset;
+
+    const rect = el.getBoundingClientRect();
+    const w = rect.width;
+    const h = rect.height;
+
+    const scaledW = w * nextZoom;
+    const scaledH = h * nextZoom;
+
+    const minVisible = 48;
+
+    const maxX = Math.max(0, (scaledW - w) / 2 + (w / 2 - minVisible));
+    const maxY = Math.max(0, (scaledH - h) / 2 + (h / 2 - minVisible));
+
+    const clampedX = Math.max(-maxX, Math.min(maxX, nextOffset.x));
+    const clampedY = Math.max(-maxY, Math.min(maxY, nextOffset.y));
+
+    return { x: clampedX, y: clampedY };
+  };
+
+  useEffect(() => {
+    const onZoomIn = () => zoomIn();
+    const onZoomOut = () => zoomOut();
+    const onReset = () => resetView();
+
+    window.addEventListener('viewer:zoomIn', onZoomIn as EventListener);
+    window.addEventListener('viewer:zoomOut', onZoomOut as EventListener);
+    window.addEventListener('viewer:reset', onReset as EventListener);
+
+    return () => {
+      window.removeEventListener('viewer:zoomIn', onZoomIn as EventListener);
+      window.removeEventListener('viewer:zoomOut', onZoomOut as EventListener);
+      window.removeEventListener('viewer:reset', onReset as EventListener);
+    };
+  }, []);
+
+  const transformStyle = useMemo(() => {
+    return {
+      transform: `translate(${offset.x}px, ${offset.y}px) scale(${zoom})`,
+      transformOrigin: 'center center',
+    } as React.CSSProperties;
+  }, [offset.x, offset.y, zoom]);
+
+  const onWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    const delta = e.deltaY;
+    if (delta > 0) {
+      zoomOut();
+    } else {
+      zoomIn();
+    }
+  };
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    if (!containerRef.current) return;
+    if ((e.target as HTMLElement).closest('[data-viewer-control="true"]')) return;
+    (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
+    dragStateRef.current = {
+      dragging: true,
+      startX: e.clientX,
+      startY: e.clientY,
+      baseX: offset.x,
+      baseY: offset.y,
+    };
+    setIsDragging(true);
+  };
+
+  const onPointerMove = (e: React.PointerEvent) => {
+    const st = dragStateRef.current;
+    if (!st || !st.dragging) return;
+    const dx = e.clientX - st.startX;
+    const dy = e.clientY - st.startY;
+    setOffset(clampOffsetToBounds({ x: st.baseX + dx, y: st.baseY + dy }, zoom));
+  };
+
+  const stopDragging = () => {
+    if (dragStateRef.current) {
+      dragStateRef.current.dragging = false;
+    }
+    setIsDragging(false);
   };
 
   return (
     <div className="space-y-4">
       {/* View Mode Controls */}
-      <div className="flex items-center justify-between">
-        <div className="flex gap-2">
+      <div className="viewer-toolbar" data-viewer-control="true">
+        <div className="viewer-toolbar__group" data-viewer-control="true">
           <button
             onClick={() => setViewMode('original')}
-            className={`px-4 py-2 rounded-lg transition-all ${
-              viewMode === 'original' 
-                ? 'bg-green-400 text-black' 
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-            }`}
+            className={`viewer-toolbar__tab ${viewMode === 'original' ? 'is-active' : ''}`}
+            data-viewer-control="true"
           >
-            <Eye size={16} className="inline mr-2" />
-            Original
+            <Eye size={14} />
+            Оригинал
           </button>
-          
+
           <button
             onClick={() => setViewMode('overlay')}
             disabled={!overlayImage || isAnalyzing}
-            className={`px-4 py-2 rounded-lg transition-all ${
-              viewMode === 'overlay' 
-                ? 'bg-green-400 text-black' 
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed'
-            }`}
+            className={`viewer-toolbar__tab ${viewMode === 'overlay' ? 'is-active' : ''}`}
+            data-viewer-control="true"
           >
-            <EyeOff size={16} className="inline mr-2" />
-            Segmentation
-          </button>
-          
-          <button
-            onClick={() => setViewMode('comparison')}
-            disabled={!overlayImage || isAnalyzing}
-            className={`px-4 py-2 rounded-lg transition-all ${
-              viewMode === 'comparison' 
-                ? 'bg-green-400 text-black' 
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed'
-            }`}
-          >
-            <Maximize2 size={16} className="inline mr-2" />
-            Compare
+            <EyeOff size={14} />
+            Сегментация
           </button>
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleZoomOut}
-            className="p-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
-          >
-            <span className="text-sm">−</span>
-          </button>
-          <span className="text-sm text-gray-400 min-w-[60px] text-center">
-            {Math.round(zoom * 100)}%
-          </span>
-          <button
-            onClick={handleZoomIn}
-            className="p-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
-          >
-            <span className="text-sm">+</span>
-          </button>
-          <button
-            onClick={handleReset}
-            className="p-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
-          >
-            <RotateCw size={16} />
+        <div className="viewer-toolbar__group" data-viewer-control="true">
+          <button onClick={zoomOut} className="viewer-toolbar__icon" data-viewer-control="true" aria-label="Отдалить">−</button>
+          <span className="viewer-toolbar__zoom" data-viewer-control="true">{Math.round(zoom * 100)}%</span>
+          <button onClick={zoomIn} className="viewer-toolbar__icon" data-viewer-control="true" aria-label="Приблизить">+</button>
+          <button onClick={resetView} className="viewer-toolbar__icon" data-viewer-control="true" aria-label="Сброс">
+            <RotateCw size={14} />
           </button>
         </div>
       </div>
 
       {/* Image Display */}
-      <div className="relative bg-gray-900 rounded-lg overflow-hidden" style={{ height: '500px' }}>
+      <div
+        ref={containerRef}
+        className="relative viewer-canvas overflow-hidden"
+        style={{ height: '640px', touchAction: 'none', cursor: isDragging ? 'grabbing' : 'grab' }}
+        onWheel={onWheel}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={stopDragging}
+        onPointerCancel={stopDragging}
+        onLostPointerCapture={stopDragging}
+      >
         {isAnalyzing ? (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
             <motion.div
@@ -109,7 +167,7 @@ const ImageViewer: React.FC<ImageViewerProps> = ({
               className="text-center"
             >
               <div className="w-16 h-16 border-4 border-green-400 border-t-transparent rounded-full animate-spin mb-4" />
-              <p className="text-gray-400">Analyzing image...</p>
+              <p className="text-gray-400">Выполняю анализ...</p>
             </motion.div>
           </div>
         ) : (
@@ -121,9 +179,10 @@ const ImageViewer: React.FC<ImageViewerProps> = ({
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
                 src={originalImage}
-                alt="Original plant image"
+                alt="Оригинальное изображение"
                 className="absolute inset-0 w-full h-full object-contain"
-                style={{ transform: `scale(${zoom})` }}
+                style={{ ...transformStyle, pointerEvents: 'none', userSelect: 'none' }}
+                draggable={false}
               />
             )}
 
@@ -134,66 +193,13 @@ const ImageViewer: React.FC<ImageViewerProps> = ({
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
                 src={overlayImage}
-                alt="Segmentation overlay"
+                alt="Сегментация"
                 className="absolute inset-0 w-full h-full object-contain"
-                style={{ transform: `scale(${zoom})` }}
+                style={{ ...transformStyle, pointerEvents: 'none', userSelect: 'none' }}
+                draggable={false}
               />
             )}
 
-            {viewMode === 'comparison' && overlayImage && (
-              <div className="relative w-full h-full">
-                {/* Original Image */}
-                <img
-                  src={originalImage}
-                  alt="Original plant image"
-                  className="absolute inset-0 w-full h-full object-contain"
-                  style={{ transform: `scale(${zoom})` }}
-                />
-                
-                {/* Overlay Image with slider */}
-                <div
-                  className="absolute inset-0 overflow-hidden"
-                  style={{ 
-                    width: `${sliderPosition}%`,
-                    transform: `scale(${zoom})`,
-                    transformOrigin: 'left center'
-                  }}
-                >
-                  <img
-                    src={overlayImage}
-                    alt="Segmentation overlay"
-                    className="absolute inset-0 w-full h-full object-contain"
-                  />
-                </div>
-
-                {/* Slider Handle */}
-                <div
-                  className="absolute top-0 bottom-0 w-1 bg-green-400 cursor-ew-resize"
-                  style={{ left: `${sliderPosition}%` }}
-                  onMouseDown={(e) => {
-                    const handleMouseMove = (e: MouseEvent) => {
-                      const rect = e.currentTarget?.parentElement?.getBoundingClientRect();
-                      if (rect) {
-                        const position = ((e.clientX - rect.left) / rect.width) * 100;
-                        setSliderPosition(Math.max(0, Math.min(100, position)));
-                      }
-                    };
-
-                    const handleMouseUp = () => {
-                      document.removeEventListener('mousemove', handleMouseMove);
-                      document.removeEventListener('mouseup', handleMouseUp);
-                    };
-
-                    document.addEventListener('mousemove', handleMouseMove);
-                    document.addEventListener('mouseup', handleMouseUp);
-                  }}
-                >
-                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-green-400 rounded-full flex items-center justify-center">
-                    <div className="w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-black" />
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         )}
       </div>
@@ -201,12 +207,11 @@ const ImageViewer: React.FC<ImageViewerProps> = ({
       {/* Image Info */}
       <div className="flex items-center justify-between text-sm text-gray-400">
         <div>
-          {viewMode === 'original' && 'Original image'}
-          {viewMode === 'overlay' && 'Segmentation overlay'}
-          {viewMode === 'comparison' && 'Before/After comparison'}
+          {viewMode === 'original' && 'Оригинал'}
+          {viewMode === 'overlay' && 'Сегментация'}
         </div>
         <div>
-          Drag slider to compare • Scroll to zoom • Click reset to restore
+          Колёсико: масштаб • Зажать и тянуть: перемещение
         </div>
       </div>
     </div>

@@ -1,17 +1,14 @@
-import { createBrowserRouter } from 'react-router-dom';
-import Landing from '../pages/Landing';
-import Dashboard from '../pages/Dashboard';
-import Analysis from '../pages/Analysis';
-import History from '../pages/History';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
+import Analysis from '../pages/Analysis.tsx';
 
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <Landing />,
+    element: <Navigate to="/analysis" replace />,
   },
   {
     path: '/dashboard',
-    element: <Dashboard />,
+    element: <Navigate to="/analysis" replace />,
   },
   {
     path: '/analysis',
@@ -19,6 +16,6 @@ export const router = createBrowserRouter([
   },
   {
     path: '/history',
-    element: <History />,
+    element: <Navigate to="/analysis" replace />,
   },
 ]);

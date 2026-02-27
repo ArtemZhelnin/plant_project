@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Download, ZoomIn, ZoomOut, RotateCw } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import UploadZone from '../components/upload/UploadZone';
-import ImageViewer from '../components/viewer/ImageViewer';
-import MetricsPanel from '../components/metrics/MetricsPanel';
-import { useAnalysisStore } from '../store/analysisStore';
+import { Download, ZoomIn, ZoomOut, RotateCw } from 'lucide-react';
+import UploadZone from '../components/upload/UploadZone.tsx';
+import ImageViewer from '../components/viewer/ImageViewer.tsx';
+import MetricsPanel from '../components/metrics/MetricsPanel.tsx';
+import { useAnalysisStore } from '../store/analysisStore.ts';
 
 interface AnalysisData {
   metrics: {
@@ -22,7 +21,14 @@ const Analysis: React.FC = () => {
   const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [originalImage, setOriginalImage] = useState<string | null>(null);
-  const { currentAnalysis, setCurrentAnalysis } = useAnalysisStore();
+  const { setCurrentAnalysis } = useAnalysisStore();
+
+  const handleAnalyzeAnother = () => {
+    setAnalysisData(null);
+    setOriginalImage(null);
+    setIsAnalyzing(false);
+    setCurrentAnalysis(null);
+  };
 
   const handleUpload = async (file: File) => {
     setIsAnalyzing(true);
@@ -62,7 +68,7 @@ const Analysis: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0F1117] via-[#141821] to-[#0F1117] p-6">
+    <div className="min-h-screen bg-[#0F1117] p-6">
       <div className="container">
         {/* Header */}
         <motion.div
@@ -70,16 +76,9 @@ const Analysis: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8 flex items-center justify-between"
         >
-          <div className="flex items-center gap-4">
-            <Link to="/dashboard">
-              <button className="btn-secondary p-2">
-                <ArrowLeft size={20} />
-              </button>
-            </Link>
-            <div>
-              <h1 className="text-4xl font-bold">Plant Analysis</h1>
-              <p className="text-gray-400">Upload and analyze plant morphology</p>
-            </div>
+          <div>
+            <h1 className="text-3xl md:text-4xl font-semibold">Анализ растения</h1>
+            <p className="text-gray-400">Загрузите изображение, получите сегментацию и измерения</p>
           </div>
           
           {analysisData && (
@@ -90,7 +89,7 @@ const Analysis: React.FC = () => {
               className="btn-primary flex items-center gap-2"
             >
               <Download size={20} />
-              Download Results
+              Скачать результат
             </motion.button>
           )}
         </motion.div>
@@ -108,15 +107,14 @@ const Analysis: React.FC = () => {
           </motion.div>
         ) : (
           /* Analysis Results */
-          <div className="grid-12">
+          <div className="space-y-4">
             {/* Image Viewer */}
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
-              className="col-span-12 lg:col-span-8"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
             >
-              <div className="glass-card p-6">
+              <div className="glass-card p-4">
                 <ImageViewer
                   originalImage={originalImage}
                   overlayImage={analysisData?.overlay}
@@ -125,54 +123,44 @@ const Analysis: React.FC = () => {
               </div>
             </motion.div>
 
-            {/* Metrics Panel */}
+            {/* Compact Toolbar */}
             <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
-              className="col-span-12 lg:col-span-4"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
+            >
+              <div className="analysis-toolbar">
+                <div className="analysis-toolbar__group">
+                  <button onClick={handleAnalyzeAnother} className="analysis-toolbar__btn">
+                    <RotateCw size={16} />
+                    Новый анализ
+                  </button>
+                </div>
+                <div className="analysis-toolbar__group">
+                  <button onClick={() => window.dispatchEvent(new CustomEvent('viewer:zoomOut'))} className="analysis-toolbar__icon" aria-label="Отдалить">
+                    <ZoomOut size={16} />
+                  </button>
+                  <button onClick={() => window.dispatchEvent(new CustomEvent('viewer:zoomIn'))} className="analysis-toolbar__icon" aria-label="Приблизить">
+                    <ZoomIn size={16} />
+                  </button>
+                  <button onClick={() => window.dispatchEvent(new CustomEvent('viewer:reset'))} className="analysis-toolbar__icon" aria-label="Сброс">
+                    <RotateCw size={16} />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Metrics (under image) */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
             >
               <MetricsPanel
                 metrics={analysisData?.metrics}
                 confidence={analysisData?.confidence}
                 isAnalyzing={isAnalyzing}
               />
-            </motion.div>
-
-            {/* Action Buttons */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="col-span-12"
-            >
-              <div className="glass-card p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <button className="btn-secondary flex items-center gap-2">
-                      <RotateCw size={20} />
-                      Analyze Another
-                    </button>
-                    <button className="btn-secondary flex items-center gap-2">
-                      <ZoomIn size={20} />
-                      Zoom
-                    </button>
-                    <button className="btn-secondary flex items-center gap-2">
-                      <ZoomOut size={20} />
-                      Reset
-                    </button>
-                  </div>
-                  
-                  {analysisData && (
-                    <div className="text-right">
-                      <div className="text-sm text-gray-400 mb-1">Analysis Confidence</div>
-                      <div className="text-2xl font-bold text-green-400">
-                        {Math.round(analysisData.confidence * 100)}%
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
             </motion.div>
           </div>
         )}

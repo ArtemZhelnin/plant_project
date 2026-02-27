@@ -39,7 +39,7 @@ const UploadZone: React.FC<UploadZoneProps> = ({ onUpload }) => {
 
   const handleFile = (file: File) => {
     if (!file.type.startsWith('image/')) {
-      alert('Please upload an image file');
+      alert('Пожалуйста, выберите файл изображения');
       return;
     }
     
@@ -93,7 +93,7 @@ const UploadZone: React.FC<UploadZoneProps> = ({ onUpload }) => {
           transition={{ delay: 0.3 }}
           className="text-2xl font-semibold mb-4"
         >
-          {isDragOver ? 'Drop your image here' : 'Upload plant image'}
+          {isDragOver ? 'Отпустите файл здесь' : 'Загрузите изображение'}
         </motion.h3>
         
         <motion.p
@@ -103,8 +103,8 @@ const UploadZone: React.FC<UploadZoneProps> = ({ onUpload }) => {
           className="text-gray-400 mb-6"
         >
           {isDragOver 
-            ? 'Release to start analysis' 
-            : 'Drag & drop your image here, or click to browse'
+            ? 'Отпустите, чтобы начать анализ' 
+            : 'Перетащите файл сюда или нажмите, чтобы выбрать'
           }
         </motion.p>
         
@@ -120,7 +120,7 @@ const UploadZone: React.FC<UploadZoneProps> = ({ onUpload }) => {
             handleClick();
           }}
         >
-          Choose File
+          Выбрать файл
         </motion.button>
       </motion.div>
       
@@ -130,8 +130,8 @@ const UploadZone: React.FC<UploadZoneProps> = ({ onUpload }) => {
         transition={{ delay: 0.6 }}
         className="mt-6 text-sm text-gray-500"
       >
-        Supported formats: JPG, PNG, WebP<br />
-        Maximum file size: 10MB
+        Форматы: JPG, PNG, WebP<br />
+        Максимум: 10MB
       </motion.div>
     </motion.div>
   );
