@@ -5,6 +5,7 @@ import UploadZone from '../components/upload/UploadZone.tsx';
 import ImageViewer from '../components/viewer/ImageViewer.tsx';
 import MetricsPanel from '../components/metrics/MetricsPanel.tsx';
 import { useAnalysisStore } from '../store/analysisStore.ts';
+import { analyzeImage } from '../api/client.ts';
 
 interface AnalysisData {
   metrics: {
@@ -34,23 +35,27 @@ const Analysis: React.FC = () => {
     setIsAnalyzing(true);
     setOriginalImage(URL.createObjectURL(file));
 
-    // Simulate API call
-    setTimeout(() => {
-      const mockData: AnalysisData = {
-        metrics: {
-          root_length_mm: 45.2,
-          stem_length_mm: 28.7,
-          leaf_area_mm2: 342.1,
-          root_area_mm2: 125.4
-        },
-        overlay: URL.createObjectURL(file), // Mock overlay
-        confidence: 0.94
+    try {
+      const data = await analyzeImage(file);
+      const overlay = data.overlay.startsWith('data:')
+        ? data.overlay
+        : `data:image/png;base64,${data.overlay}`;
+
+      const responseData: AnalysisData = {
+        metrics: data.metrics,
+        overlay,
+        confidence: data.confidence,
       };
-      
-      setAnalysisData(mockData);
-      setCurrentAnalysis(mockData);
+
+      setAnalysisData(responseData);
+      setCurrentAnalysis(responseData);
+    } catch (error) {
+      console.error('Analysis failed', error);
+      alert('Не удалось выполнить анализ. Проверьте, что backend запущен.');
+      setOriginalImage(null);
+    } finally {
       setIsAnalyzing(false);
-    }, 3000);
+    }
   };
 
   const handleDownload = () => {
