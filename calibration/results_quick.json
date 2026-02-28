@@ -1,0 +1,74 @@
+{
+  "mm_per_pixel": 0.1065855704355596,
+  "std": 0.0003640454910260059,
+  "relative_std": 0.3415523222687104,
+  "images_used": 3,
+  "quality": "camera_ideal",
+  "input_glob": "data/calib/calib_*.jpg",
+  "pattern_inner_corners": {
+    "cols": 4,
+    "rows": 7
+  },
+  "square_size_mm": 10.0,
+  "images_total": 3,
+  "images_detected": 3,
+  "images_rejected_outliers": 0,
+  "outlier_rule": {
+    "type": "abs(x-mean) > z*std",
+    "z": 2.0
+  },
+  "notes": [
+    "Scale must be estimated on original image resolution (no resize before calibration).",
+    "Use the same camera setup for calibration images and plant measurements."
+  ],
+  "details": {
+    "stats_before_outlier_filter": {
+      "mean": 0.1065855704355596,
+      "std": 0.0003640454910260059,
+      "min": 0.10618921692192917,
+      "max": 0.10690501977258557,
+      "relative_std_percent": 0.3415523222687104,
+      "n": 3
+    },
+    "stats_after_outlier_filter": {
+      "mean": 0.1065855704355596,
+      "std": 0.0003640454910260059,
+      "min": 0.10618921692192917,
+      "max": 0.10690501977258557,
+      "relative_std_percent": 0.3415523222687104,
+      "n": 3
+    },
+    "kept_images": [
+      "data/calib\\calib_1.jpg",
+      "data/calib\\calib_10.jpg",
+      "data/calib\\calib_11.jpg"
+    ],
+    "dropped_outliers": [],
+    "per_image": [
+      {
+        "path": "data/calib\\calib_1.jpg",
+        "status": "ok",
+        "pixel_mean": 93.75368456770804,
+        "pixel_std": 0.818617272336988,
+        "mm_per_pixel": 0.1066624746121641,
+        "n_samples": 45
+      },
+      {
+        "path": "data/calib\\calib_10.jpg",
+        "status": "ok",
+        "pixel_mean": 93.54097703992355,
+        "pixel_std": 1.0226321333040993,
+        "mm_per_pixel": 0.10690501977258557,
+        "n_samples": 45
+      },
+      {
+        "path": "data/calib\\calib_11.jpg",
+        "status": "ok",
+        "pixel_mean": 94.17152032820854,
+        "pixel_std": 0.852575802052812,
+        "mm_per_pixel": 0.10618921692192917,
+        "n_samples": 45
+      }
+    ]
+  }
+}
