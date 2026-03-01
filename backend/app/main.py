@@ -1,14 +1,8 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 import uvicorn
-import base64
-import io
-from PIL import Image
-import numpy as np
 
 from app.routes import router
-from app.schemas import AnalysisResponse
 
 app = FastAPI(
     title="Plant Analysis API",
@@ -19,8 +13,9 @@ app = FastAPI(
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
-    allow_credentials=True,
+    # Temporary: allow access from public tunnel URLs.
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )

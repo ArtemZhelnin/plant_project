@@ -5,9 +5,6 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   timeout: 30000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
 export interface AnalysisResponse {
@@ -16,9 +13,12 @@ export interface AnalysisResponse {
     stem_length_mm: number;
     leaf_area_mm2: number;
     root_area_mm2: number;
+    stem_area_mm2?: number;
   };
   overlay: string;
   confidence: number;
+  loaded_num_classes?: number;
+  class_names?: string[];
 }
 
 export const analyzeImage = async (file: File): Promise<AnalysisResponse> => {

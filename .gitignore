@@ -24,11 +24,13 @@ MANIFEST
 # PyTorch
 *.pth
 *.pt
+weights/*
 
 # Data files
 data/raw/*
 data/processed/*
 data/calib/*
+data/rukola/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 !data/calib/.gitkeep

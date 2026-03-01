@@ -1,0 +1,199 @@
+{
+  "mm_per_pixel": 0.09556744701808041,
+  "std": 0.0019844684263283737,
+  "relative_std": 1.8798109477711402,
+  "images_used": 16,
+  "quality": "normal",
+  "input_glob": "data/calib/calib_*.jpg",
+  "pattern_inner_corners": {
+    "cols": 4,
+    "rows": 7
+  },
+  "square_size_mm": 10.0,
+  "images_total": 18,
+  "images_detected": 16,
+  "images_rejected_outliers": 0,
+  "outlier_rule": {
+    "type": "abs(x-mean) > z*std",
+    "z": 2.0
+  },
+  "notes": [
+    "Scale must be estimated on original image resolution (no resize before calibration).",
+    "Use the same camera setup for calibration images and plant measurements."
+  ],
+  "details": {
+    "stats_before_outlier_filter": {
+      "mean": 0.10556744701808041,
+      "std": 0.0019844684263283737,
+      "min": 0.10222714857135337,
+      "max": 0.10919386606450515,
+      "relative_std_percent": 1.8798109477711402,
+      "n": 16
+    },
+    "stats_after_outlier_filter": {
+      "mean": 0.10556744701808041,
+      "std": 0.0019844684263283737,
+      "min": 0.10222714857135337,
+      "max": 0.10919386606450515,
+      "relative_std_percent": 1.8798109477711402,
+      "n": 16
+    },
+    "kept_images": [
+      "data/calib\\calib_1.jpg",
+      "data/calib\\calib_10.jpg",
+      "data/calib\\calib_11.jpg",
+      "data/calib\\calib_12.jpg",
+      "data/calib\\calib_14.jpg",
+      "data/calib\\calib_15.jpg",
+      "data/calib\\calib_16.jpg",
+      "data/calib\\calib_17.jpg",
+      "data/calib\\calib_2.jpg",
+      "data/calib\\calib_3.jpg",
+      "data/calib\\calib_4.jpg",
+      "data/calib\\calib_5.jpg",
+      "data/calib\\calib_6.jpg",
+      "data/calib\\calib_7.jpg",
+      "data/calib\\calib_8.jpg",
+      "data/calib\\calib_9.jpg"
+    ],
+    "dropped_outliers": [],
+    "per_image": [
+      {
+        "path": "data/calib\\calib_1.jpg",
+        "status": "ok",
+        "pixel_mean": 93.75368456770804,
+        "pixel_std": 0.818617272336988,
+        "mm_per_pixel": 0.1066624746121641,
+        "n_samples": 45
+      },
+      {
+        "path": "data/calib\\calib_10.jpg",
+        "status": "ok",
+        "pixel_mean": 93.54097703992355,
+        "pixel_std": 1.0226321333040993,
+        "mm_per_pixel": 0.10690501977258557,
+        "n_samples": 45
+      },
+      {
+        "path": "data/calib\\calib_11.jpg",
+        "status": "ok",
+        "pixel_mean": 94.17152032820854,
+        "pixel_std": 0.852575802052812,
+        "mm_per_pixel": 0.10618921692192917,
+        "n_samples": 45
+      },
+      {
+        "path": "data/calib\\calib_12.jpg",
+        "status": "ok",
+        "pixel_mean": 95.38681329878894,
+        "pixel_std": 0.9264295579477906,
+        "mm_per_pixel": 0.1048362939715375,
+        "n_samples": 45
+      },
+      {
+        "path": "data/calib\\calib_13.jpg",
+        "status": "not_found"
+      },
+      {
+        "path": "data/calib\\calib_14.jpg",
+        "status": "ok",
+        "pixel_mean": 92.59498560817845,
+        "pixel_std": 1.0659358331404467,
+        "mm_per_pixel": 0.1079972088587565,
+        "n_samples": 45
+      },
+      {
+        "path": "data/calib\\calib_15.jpg",
+        "status": "ok",
+        "pixel_mean": 97.82137269553317,
+        "pixel_std": 0.953300799387463,
+        "mm_per_pixel": 0.10222714857135337,
+        "n_samples": 45
+      },
+      {
+        "path": "data/calib\\calib_16.jpg",
+        "status": "ok",
+        "pixel_mean": 95.94392598981946,
+        "pixel_std": 1.2206372254907076,
+        "mm_per_pixel": 0.10422754642186617,
+        "n_samples": 45
+      },
+      {
+        "path": "data/calib\\calib_17.jpg",
+        "status": "ok",
+        "pixel_mean": 94.32620560231246,
+        "pixel_std": 1.857858672599218,
+        "mm_per_pixel": 0.10601507752957726,
+        "n_samples": 45
+      },
+      {
+        "path": "data/calib\\calib_18.jpg",
+        "status": "not_found"
+      },
+      {
+        "path": "data/calib\\calib_2.jpg",
+        "status": "ok",
+        "pixel_mean": 91.580235780759,
+        "pixel_std": 0.7469522924159455,
+        "mm_per_pixel": 0.10919386606450515,
+        "n_samples": 45
+      },
+      {
+        "path": "data/calib\\calib_3.jpg",
+        "status": "ok",
+        "pixel_mean": 92.78587256797839,
+        "pixel_std": 0.8999345798775157,
+        "mm_per_pixel": 0.10777502784891771,
+        "n_samples": 45
+      },
+      {
+        "path": "data/calib\\calib_4.jpg",
+        "status": "ok",
+        "pixel_mean": 93.9995326075058,
+        "pixel_std": 1.1888227749814149,
+        "mm_per_pixel": 0.10638350768992555,
+        "n_samples": 45
+      },
+      {
+        "path": "data/calib\\calib_5.jpg",
+        "status": "ok",
+        "pixel_mean": 95.4201100046103,
+        "pixel_std": 0.9154364079529307,
+        "mm_per_pixel": 0.10479971150229068,
+        "n_samples": 45
+      },
+      {
+        "path": "data/calib\\calib_6.jpg",
+        "status": "ok",
+        "pixel_mean": 97.72542622755878,
+        "pixel_std": 1.6029633194951203,
+        "mm_per_pixel": 0.10232751481394899,
+        "n_samples": 45
+      },
+      {
+        "path": "data/calib\\calib_7.jpg",
+        "status": "ok",
+        "pixel_mean": 96.88075736193551,
+        "pixel_std": 1.4343341264306115,
+        "mm_per_pixel": 0.10321967202053485,
+        "n_samples": 45
+      },
+      {
+        "path": "data/calib\\calib_8.jpg",
+        "status": "ok",
+        "pixel_mean": 95.54031012198492,
+        "pixel_std": 1.4957703561882787,
+        "mm_per_pixel": 0.10466786204934964,
+        "n_samples": 45
+      },
+      {
+        "path": "data/calib\\calib_9.jpg",
+        "status": "ok",
+        "pixel_mean": 94.65035830337806,
+        "pixel_std": 1.6936913565911405,
+        "mm_per_pixel": 0.10565200364004435,
+        "n_samples": 45
+      }
+    ]
+  }
+}

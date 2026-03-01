@@ -9,19 +9,41 @@ interface UploadZoneProps {
 const UploadZone: React.FC<UploadZoneProps> = ({ onUpload }) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const dragDepthRef = useRef(0);
+
+  const isFileDrag = (e: React.DragEvent) => {
+    const dt = e.dataTransfer;
+    if (!dt) return false;
+    if (dt.types && Array.from(dt.types).includes('Files')) return true;
+    return dt.files && dt.files.length > 0;
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (!isFileDrag(e)) return;
+    dragDepthRef.current += 1;
+    setIsDragOver(true);
+  };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
+    if (!isFileDrag(e)) return;
     setIsDragOver(true);
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
-    setIsDragOver(false);
+    if (!isFileDrag(e)) return;
+    dragDepthRef.current = Math.max(0, dragDepthRef.current - 1);
+    if (dragDepthRef.current === 0) {
+      setIsDragOver(false);
+    }
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
+    if (!isFileDrag(e)) return;
+    dragDepthRef.current = 0;
     setIsDragOver(false);
     
     const files = e.dataTransfer.files;
@@ -53,6 +75,7 @@ const UploadZone: React.FC<UploadZoneProps> = ({ onUpload }) => {
   return (
     <motion.div
       className={`upload-zone ${isDragOver ? 'dragover' : ''}`}
+      onDragEnter={handleDragEnter}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
