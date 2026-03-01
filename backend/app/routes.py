@@ -24,7 +24,20 @@ router = APIRouter()
 
 @lru_cache(maxsize=1)
 def get_model_bundle() -> LoadedSegmentationModel:
-    model_path = Path(os.getenv("PLANT_MODEL_PATH", PROJECT_ROOT / "weights/segmentation/best.pt"))
+    preferred_default = PROJECT_ROOT / "weights/segmentation_multiclass_max_gpu/best.pt"
+    fallback_multiclass = PROJECT_ROOT / "weights/segmentation_multiclass_max/best.pt"
+    fallback_binary = PROJECT_ROOT / "weights/segmentation/best.pt"
+
+    env_path = os.getenv("PLANT_MODEL_PATH")
+    if env_path:
+        model_path = Path(env_path)
+    elif preferred_default.exists():
+        model_path = preferred_default
+    elif fallback_multiclass.exists():
+        model_path = fallback_multiclass
+    else:
+        model_path = fallback_binary
+
     model_device = os.getenv("PLANT_MODEL_DEVICE", "auto")
     model_threshold = float(os.getenv("PLANT_MODEL_THRESHOLD", "0.5"))
 
@@ -77,10 +90,13 @@ async def analyze_plant(image: UploadFile = File(...)):
         stem_length_mm=float(pred["metrics"]["stem_length_mm"]),
         leaf_area_mm2=float(pred["metrics"]["leaf_area_mm2"]),
         root_area_mm2=float(pred["metrics"]["root_area_mm2"]),
+        stem_area_mm2=float(pred["metrics"].get("stem_area_mm2", 0.0)),
     )
 
     return AnalysisResponse(
         metrics=metrics,
         overlay=str(pred["overlay"]),
         confidence=float(pred["confidence"]),
+        loaded_num_classes=int(bundle.num_classes),
+        class_names=[str(x) for x in bundle.class_names],
     )

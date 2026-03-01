@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 import torch
 
@@ -15,6 +15,8 @@ class LoadedSegmentationModel:
     architecture: str
     encoder: str
     threshold: float
+    num_classes: int
+    class_names: List[str]
 
 
 def resolve_device(device: str = "auto") -> torch.device:
@@ -28,6 +30,40 @@ def _extract_training_args(ckpt: Dict[str, Any]) -> Dict[str, Any]:
     if isinstance(args, dict):
         return args
     return {}
+
+
+def _default_class_names(num_classes: int) -> List[str]:
+    if num_classes == 1:
+        return ["plant"]
+    if num_classes == 4:
+        return ["background", "leaf", "root", "stem"]
+    return [f"class_{i}" for i in range(num_classes)]
+
+
+def _infer_num_classes(state_dict: Dict[str, Any], checkpoint: Dict[str, Any], train_args: Dict[str, Any]) -> int:
+    class_names = checkpoint.get("class_names")
+    if isinstance(class_names, list) and class_names:
+        return int(len(class_names))
+
+    arg_classes = train_args.get("num_classes")
+    if arg_classes is not None:
+        try:
+            return int(arg_classes)
+        except (TypeError, ValueError):
+            pass
+
+    for k, v in state_dict.items():
+        if (
+            isinstance(k, str)
+            and "segmentation_head" in k
+            and isinstance(v, torch.Tensor)
+            and v.ndim == 4
+        ):
+            out_ch = int(v.shape[0])
+            if out_ch > 0:
+                return out_ch
+
+    return 1
 
 
 def load_segmentation_model(
@@ -54,13 +90,19 @@ def load_segmentation_model(
     architecture = str(train_args.get("architecture", "unet"))
     encoder = str(train_args.get("encoder", "resnet34"))
     image_size = int(train_args.get("image_size", 512))
+    num_classes = _infer_num_classes(state_dict=state_dict, checkpoint=checkpoint, train_args=train_args)
+    raw_class_names = checkpoint.get("class_names")
+    if isinstance(raw_class_names, list) and len(raw_class_names) == num_classes:
+        class_names = [str(x) for x in raw_class_names]
+    else:
+        class_names = _default_class_names(num_classes)
 
     model = build_segmentation_model(
         architecture=architecture,
         encoder_name=encoder,
         encoder_weights=None,
         in_channels=3,
-        classes=1,
+        classes=num_classes,
     )
     model.load_state_dict(state_dict, strict=True)
     model.to(dev)
@@ -73,4 +115,6 @@ def load_segmentation_model(
         architecture=architecture,
         encoder=encoder,
         threshold=float(threshold),
+        num_classes=num_classes,
+        class_names=class_names,
     )

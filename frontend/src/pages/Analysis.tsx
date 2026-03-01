@@ -13,9 +13,12 @@ interface AnalysisData {
     stem_length_mm: number;
     leaf_area_mm2: number;
     root_area_mm2: number;
+    stem_area_mm2?: number;
   };
   overlay: string;
   confidence: number;
+  loaded_num_classes?: number;
+  class_names?: string[];
 }
 
 const Analysis: React.FC = () => {
@@ -45,6 +48,8 @@ const Analysis: React.FC = () => {
         metrics: data.metrics,
         overlay,
         confidence: data.confidence,
+        loaded_num_classes: data.loaded_num_classes,
+        class_names: data.class_names,
       };
 
       setAnalysisData(responseData);
@@ -73,8 +78,13 @@ const Analysis: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0F1117] p-6">
-      <div className="container">
+    <div className="analysis-page">
+      <div className="analysis-page__scene" aria-hidden="true">
+        <div className="analysis-page__leaf-frame" />
+        <div className="analysis-page__grass" />
+      </div>
+
+      <div className="container analysis-page__content p-6">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -124,6 +134,8 @@ const Analysis: React.FC = () => {
                   originalImage={originalImage}
                   overlayImage={analysisData?.overlay}
                   isAnalyzing={isAnalyzing}
+                  modelClasses={analysisData?.loaded_num_classes}
+                  classNames={analysisData?.class_names}
                 />
               </div>
             </motion.div>

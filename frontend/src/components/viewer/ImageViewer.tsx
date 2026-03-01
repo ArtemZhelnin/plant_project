@@ -1,11 +1,14 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, RotateCw, SlidersHorizontal } from 'lucide-react';
+import catBoxSprite from '../../back/Box3.png';
 
 interface ImageViewerProps {
   originalImage: string;
   overlayImage?: string;
   isAnalyzing?: boolean;
+  modelClasses?: number;
+  classNames?: string[];
 }
 
 type ViewerMode = 'original' | 'overlay' | 'comparison';
@@ -16,6 +19,8 @@ const ImageViewer: React.FC<ImageViewerProps> = ({
   originalImage,
   overlayImage,
   isAnalyzing = false,
+  modelClasses,
+  classNames,
 }) => {
   const [viewMode, setViewMode] = useState<ViewerMode>('original');
   const [comparePosition, setComparePosition] = useState(50);
@@ -248,118 +253,150 @@ const ImageViewer: React.FC<ImageViewerProps> = ({
         </div>
       </div>
 
-      <div
-        ref={containerRef}
-        className="relative viewer-canvas overflow-hidden"
-        style={{ height: '640px', touchAction: 'none', cursor }}
-        onWheel={onWheel}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={stopPointer}
-        onPointerCancel={stopPointer}
-        onLostPointerCapture={stopPointer}
-      >
-        {isAnalyzing ? (
-          <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
-            <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-center">
-              <div className="w-16 h-16 border-4 border-green-400 border-t-transparent rounded-full animate-spin mb-4" />
-              <p className="text-gray-400">Выполняю анализ...</p>
-            </motion.div>
-          </div>
-        ) : (
-          <div className="relative w-full h-full overflow-hidden">
-            <div
-              className="absolute"
-              style={{
-                left: `${frameRect.left}px`,
-                top: `${frameRect.top}px`,
-                width: `${frameRect.width}px`,
-                height: `${frameRect.height}px`,
-                ...layerTransformStyle,
-              }}
-            >
-              {viewMode === 'original' && (
-                <motion.img
-                  key="original"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.3 }}
-                  src={originalImage}
-                  alt="Оригинальное изображение"
-                  className="absolute inset-0 w-full h-full object-fill select-none pointer-events-none"
-                  draggable={false}
+      <div className="viewer-canvas-wrap">
+        <div
+          ref={containerRef}
+          className="relative viewer-canvas overflow-hidden"
+          style={{ height: '640px', touchAction: 'none', cursor }}
+          onWheel={onWheel}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={stopPointer}
+          onPointerCancel={stopPointer}
+          onLostPointerCapture={stopPointer}
+        >
+          {isAnalyzing ? (
+            <div className="viewer-loading">
+              <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="viewer-loading__content">
+                <div
+                  className="viewer-loading__cat"
+                  style={{ backgroundImage: `url(${catBoxSprite})` }}
+                  aria-hidden="true"
                 />
-              )}
-
-              {viewMode === 'overlay' && overlayImage && (
-                <motion.img
-                  key="overlay"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.3 }}
-                  src={overlayImage}
-                  alt="Сегментация"
-                  className="absolute inset-0 w-full h-full object-fill select-none pointer-events-none"
-                  draggable={false}
-                />
-              )}
-
-              {viewMode === 'comparison' && overlayImage && (
-                <>
+                <p className="viewer-loading__text">Выполняю анализ...</p>
+              </motion.div>
+            </div>
+          ) : (
+            <div className="relative w-full h-full overflow-hidden">
+              <div
+                className="absolute"
+                style={{
+                  left: `${frameRect.left}px`,
+                  top: `${frameRect.top}px`,
+                  width: `${frameRect.width}px`,
+                  height: `${frameRect.height}px`,
+                  ...layerTransformStyle,
+                }}
+              >
+                {viewMode === 'original' && (
                   <motion.img
-                    key="comparison-original"
+                    key="original"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.3 }}
                     src={originalImage}
-                    alt="Оригинал"
+                    alt="Оригинальное изображение"
                     className="absolute inset-0 w-full h-full object-fill select-none pointer-events-none"
                     draggable={false}
                   />
+                )}
 
+                {viewMode === 'overlay' && overlayImage && (
                   <motion.img
-                    key="comparison-overlay"
+                    key="overlay"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.3 }}
                     src={overlayImage}
                     alt="Сегментация"
                     className="absolute inset-0 w-full h-full object-fill select-none pointer-events-none"
-                    style={{ clipPath: `inset(0 ${100 - comparePosition}% 0 0)` }}
                     draggable={false}
                   />
+                )}
 
-                  <div
-                    className="absolute top-0 bottom-0 w-0.5 bg-white/90 pointer-events-none z-10"
-                    style={{ left: `${comparePosition}%`, transform: 'translateX(-50%)' }}
-                  />
+                {viewMode === 'comparison' && overlayImage && (
+                  <>
+                    <motion.img
+                      key="comparison-original"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3 }}
+                      src={originalImage}
+                      alt="Оригинал"
+                      className="absolute inset-0 w-full h-full object-fill select-none pointer-events-none"
+                      draggable={false}
+                    />
 
-                  <button
-                    type="button"
-                    data-compare-handle="true"
-                    className="absolute top-1/2 z-20 h-8 w-8 rounded-full bg-white/90 border border-gray-700 shadow flex items-center justify-center text-gray-900"
-                    style={{ left: `${comparePosition}%`, transform: 'translate(-50%, -50%)', cursor: 'col-resize' }}
-                    aria-label="Двигать разделитель сравнения"
-                  >
-                    <>
-                      {'<'}
-                      {'>'}
-                    </>
-                  </button>
-                </>
-              )}
+                    <motion.img
+                      key="comparison-overlay"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3 }}
+                      src={overlayImage}
+                      alt="Сегментация"
+                      className="absolute inset-0 w-full h-full object-fill select-none pointer-events-none"
+                      style={{ clipPath: `inset(0 ${100 - comparePosition}% 0 0)` }}
+                      draggable={false}
+                    />
+
+                    <div
+                      className="absolute top-0 bottom-0 w-0.5 bg-white/90 pointer-events-none z-10"
+                      style={{ left: `${comparePosition}%`, transform: 'translateX(-50%)' }}
+                    />
+
+                    <button
+                      type="button"
+                      data-compare-handle="true"
+                      className="absolute top-1/2 z-20 h-8 w-8 rounded-full bg-white/90 border border-gray-700 shadow flex items-center justify-center text-gray-900"
+                      style={{ left: `${comparePosition}%`, transform: 'translate(-50%, -50%)', cursor: 'col-resize' }}
+                      aria-label="Двигать разделитель сравнения"
+                    >
+                      <>
+                        {'<'}
+                        {'>'}
+                      </>
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
-      <div className="flex items-center justify-between text-sm text-gray-400">
+      <div className="viewer-footer">
         <div>
           {viewMode === 'original' && 'Оригинал'}
           {viewMode === 'overlay' && 'Сегментация'}
           {viewMode === 'comparison' && 'Сравнение'}
         </div>
-        <div>Колёсико: масштаб • Зажать и тянуть: перемещение</div>
+        <div className="viewer-footer__right">
+          {(viewMode === 'overlay' || viewMode === 'comparison') && overlayImage && (
+            <>
+              {(modelClasses ?? 1) >= 4 ? (
+                <div className="viewer-legend" title={classNames?.join(', ')}>
+                  <span className="viewer-legend__item">
+                    <span className="viewer-legend__dot viewer-legend__dot--leaf" />
+                    Лист
+                  </span>
+                  <span className="viewer-legend__item">
+                    <span className="viewer-legend__dot viewer-legend__dot--root" />
+                    Корень
+                  </span>
+                  <span className="viewer-legend__item">
+                    <span className="viewer-legend__dot viewer-legend__dot--stem" />
+                    Стебель
+                  </span>
+                </div>
+              ) : (
+                <div className="viewer-legend viewer-legend--warn">
+                  Сейчас загружена бинарная модель без разделения классов
+                </div>
+              )}
+            </>
+          )}
+          <div>Колёсико: масштаб • Зажать и тянуть: перемещение</div>
+        </div>
       </div>
     </div>
   );
