@@ -19,11 +19,16 @@ export interface AnalysisResponse {
   confidence: number;
   loaded_num_classes?: number;
   class_names?: string[];
+  loaded_model_type?: 'unet' | 'yolo' | string;
 }
 
-export const analyzeImage = async (file: File): Promise<AnalysisResponse> => {
+export const analyzeImage = async (
+  file: File,
+  modelType: 'unet' | 'yolo' = 'unet',
+): Promise<AnalysisResponse> => {
   const formData = new FormData();
   formData.append('image', file);
+  formData.append('model_type', modelType);
 
   const response = await apiClient.post('/api/predict', formData);
 
