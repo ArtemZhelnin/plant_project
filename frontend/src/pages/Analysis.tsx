@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Download, ZoomIn, ZoomOut, RotateCw } from 'lucide-react';
+import { Download, RotateCw, ZoomIn, ZoomOut } from 'lucide-react';
 import UploadZone from '../components/upload/UploadZone.tsx';
 import ImageViewer from '../components/viewer/ImageViewer.tsx';
 import MetricsPanel from '../components/metrics/MetricsPanel.tsx';
@@ -19,12 +19,14 @@ interface AnalysisData {
   confidence: number;
   loaded_num_classes?: number;
   class_names?: string[];
+  loaded_model_type?: 'unet' | 'yolo' | string;
 }
 
 const Analysis: React.FC = () => {
   const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [originalImage, setOriginalImage] = useState<string | null>(null);
+  const [selectedModel, setSelectedModel] = useState<'unet' | 'yolo'>('unet');
   const { setCurrentAnalysis } = useAnalysisStore();
 
   const handleAnalyzeAnother = () => {
@@ -39,7 +41,7 @@ const Analysis: React.FC = () => {
     setOriginalImage(URL.createObjectURL(file));
 
     try {
-      const data = await analyzeImage(file);
+      const data = await analyzeImage(file, selectedModel);
       const overlay = data.overlay.startsWith('data:')
         ? data.overlay
         : `data:image/png;base64,${data.overlay}`;
@@ -50,6 +52,7 @@ const Analysis: React.FC = () => {
         confidence: data.confidence,
         loaded_num_classes: data.loaded_num_classes,
         class_names: data.class_names,
+        loaded_model_type: data.loaded_model_type,
       };
 
       setAnalysisData(responseData);
@@ -65,12 +68,9 @@ const Analysis: React.FC = () => {
 
   const handleDownload = () => {
     if (!analysisData) return;
-    
     const dataStr = JSON.stringify(analysisData, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    
+    const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
     const exportFileDefaultName = `plant-analysis-${Date.now()}.json`;
-    
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
     linkElement.setAttribute('download', exportFileDefaultName);
@@ -85,7 +85,6 @@ const Analysis: React.FC = () => {
       </div>
 
       <div className="container analysis-page__content p-6">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -94,8 +93,26 @@ const Analysis: React.FC = () => {
           <div>
             <h1 className="text-3xl md:text-4xl font-semibold">Анализ растения</h1>
             <p className="text-gray-400">Загрузите изображение, получите сегментацию и измерения</p>
+            <div className="analysis-model-toggle mt-3 inline-flex items-center gap-2 p-1">
+              <button
+                type="button"
+                onClick={() => setSelectedModel('unet')}
+                disabled={isAnalyzing}
+                className={`analysis-model-toggle__btn ${selectedModel === 'unet' ? 'is-active' : ''}`}
+              >
+                UNet
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedModel('yolo')}
+                disabled={isAnalyzing}
+                className={`analysis-model-toggle__btn ${selectedModel === 'yolo' ? 'is-active' : ''}`}
+              >
+                YOLO
+              </button>
+            </div>
           </div>
-          
+
           {analysisData && (
             <motion.button
               initial={{ opacity: 0, scale: 0.8 }}
@@ -110,7 +127,6 @@ const Analysis: React.FC = () => {
         </motion.div>
 
         {!originalImage ? (
-          /* Upload Section */
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -121,9 +137,7 @@ const Analysis: React.FC = () => {
             </div>
           </motion.div>
         ) : (
-          /* Analysis Results */
           <div className="space-y-4">
-            {/* Image Viewer */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -140,7 +154,6 @@ const Analysis: React.FC = () => {
               </div>
             </motion.div>
 
-            {/* Compact Toolbar */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -167,7 +180,6 @@ const Analysis: React.FC = () => {
               </div>
             </motion.div>
 
-            {/* Metrics (under image) */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -178,6 +190,11 @@ const Analysis: React.FC = () => {
                 confidence={analysisData?.confidence}
                 isAnalyzing={isAnalyzing}
               />
+              {analysisData?.loaded_model_type && (
+                <div className="mt-2 text-xs text-gray-400">
+                  Модель: {String(analysisData.loaded_model_type).toUpperCase()}
+                </div>
+              )}
             </motion.div>
           </div>
         )}

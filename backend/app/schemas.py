@@ -14,6 +14,7 @@ class AnalysisResponse(BaseModel):
     confidence: float
     loaded_num_classes: int = 1
     class_names: List[str] = []
+    loaded_model_type: str = "unet"
 
 class HealthResponse(BaseModel):
     status: str

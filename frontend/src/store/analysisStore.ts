@@ -12,6 +12,7 @@ interface AnalysisData {
   confidence: number;
   loaded_num_classes?: number;
   class_names?: string[];
+  loaded_model_type?: 'unet' | 'yolo' | string;
 }
 
 interface AnalysisStore {
