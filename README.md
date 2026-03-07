@@ -313,6 +313,56 @@ py -3.11 -c "import torch; print(torch.cuda.is_available(), torch.cuda.get_devic
   - делать class-balanced sampling и hard-example mining;
   - проверять качество отдельно по Wheat/Arugula.
 
+## 16. Deploy на домен plants1.mooo.com через Docker Compose
+
+Добавлены файлы:
+- `docker-compose.yml`
+- `docker/Caddyfile`
+- `docker/frontend.Dockerfile`
+- `docker/backend.Dockerfile`
+- `docker/frontend-nginx.conf`
+- `.env.example`
+
+### 16.1 Режим с отдельным backend-сервером (ваш кейс)
+
+1. Создайте `.env` из `.env.example`.
+2. Укажите:
+   - `SITE_DOMAIN=plants1.mooo.com`
+   - `BACKEND_UPSTREAM=https://<адрес-вашего-backend>`
+   - `PUBLIC_API_URL=/api`
+3. Запустите:
+
+```powershell
+docker compose up -d --build
+```
+
+Что происходит:
+- `frontend` отдается как статический сайт;
+- `caddy` поднимает HTTPS для `plants1.mooo.com`;
+- запросы `https://plants1.mooo.com/api/*` проксируются на `BACKEND_UPSTREAM`.
+
+### 16.2 Полный стек в одном compose (опционально)
+
+Если хотите временно поднять backend рядом:
+
+```powershell
+$env:BACKEND_UPSTREAM="http://backend:8000"
+docker compose --profile fullstack up -d --build
+```
+
+В этом режиме сервис `backend` стартует в контейнере, веса и calibration монтируются из локальных папок:
+- `./weights -> /app/weights`
+- `./weightsYOLO -> /app/weightsYOLO`
+- `./calibration -> /app/calibration`
+
+### 16.3 DNS и порт-форвардинг
+
+Для `plants1.mooo.com` на вашей машине должны быть доступны извне:
+- TCP `80`
+- TCP `443`
+
+И домен должен указывать на публичный IP сервера с docker.
+
 ---
 
 Если нужно, следующий шаг: добавить в README раздел с exact reproducible train-конфигом под вашу текущую видеокарту и временем эпохи (ETA), плюс чек-лист для финальной сдачи хакатона.
