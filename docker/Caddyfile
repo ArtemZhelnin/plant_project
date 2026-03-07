@@ -1,0 +1,8 @@
+{$SITE_DOMAIN}, localhost {
+    encode zstd gzip
+
+    @api path /api/* /health
+    reverse_proxy @api {$BACKEND_UPSTREAM}
+
+    reverse_proxy frontend:80
+}

@@ -1,0 +1,60 @@
+name: plant-project
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend.Dockerfile
+      args:
+        REACT_APP_API_URL: ${PUBLIC_API_URL:-/api}
+    restart: unless-stopped
+    expose:
+      - "80"
+    networks:
+      - web
+
+  caddy:
+    image: caddy:2.8-alpine
+    restart: unless-stopped
+    depends_on:
+      - frontend
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      SITE_DOMAIN: ${SITE_DOMAIN:-plants1.mooo.com}
+      BACKEND_UPSTREAM: ${BACKEND_UPSTREAM:-https://api.plants1.mooo.com}
+    volumes:
+      - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - web
+
+  backend:
+    profiles:
+      - fullstack
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+    restart: unless-stopped
+    environment:
+      PLANT_MODEL_DEVICE: ${PLANT_MODEL_DEVICE:-auto}
+      PLANT_MODEL_PATH: ${PLANT_MODEL_PATH:-weights/segmentation_multiclass_max_gpu/best.pt}
+      PLANT_YOLO_MODEL_PATH: ${PLANT_YOLO_MODEL_PATH:-weightsYOLO/best.pt}
+    expose:
+      - "8000"
+    volumes:
+      - ./weights:/app/weights:ro
+      - ./weightsYOLO:/app/weightsYOLO:ro
+      - ./calibration:/app/calibration:ro
+    networks:
+      - web
+
+networks:
+  web:
+    driver: bridge
+
+volumes:
+  caddy_data:
+  caddy_config:
