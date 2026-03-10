@@ -191,7 +191,7 @@ py -3.11 -m train.train_max --data_root training --output_dir weights/segmentati
 ### 8.1 Backend
 
 ```powershell
-cd C:\CascadeProjects\plant_project\backend
+cd ...\plant_project\backend
 py -3.11 -m pip install -r requirements.txt
 py -3.11 -m uvicorn "app.main:app" --host 0.0.0.0 --port 8000 --reload
 ```
@@ -199,7 +199,7 @@ py -3.11 -m uvicorn "app.main:app" --host 0.0.0.0 --port 8000 --reload
 ### 8.2 Frontend
 
 ```powershell
-cd C:\CascadeProjects\plant_project\frontend
+cd ...\plant_project\frontend
 npm install
 npm start
 ```
